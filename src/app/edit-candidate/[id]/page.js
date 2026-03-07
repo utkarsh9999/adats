@@ -227,7 +227,7 @@ export default function EditCandidate() {
                 <form onSubmit={handleSubmit}>
                   <div className="row">
                     {/* Name, Email, Phone - 3 columns */}
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Full Name *</label>
                       <input
                         type="text"
@@ -239,7 +239,7 @@ export default function EditCandidate() {
                         required
                       />
                     </div>
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Email *</label>
                       <input
                         type="email"
@@ -251,7 +251,7 @@ export default function EditCandidate() {
                         required
                       />
                     </div>
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Phone *</label>
                       <input
                         type="text"
@@ -265,7 +265,7 @@ export default function EditCandidate() {
                     </div>
 
                     {/* LinkedIn URL - Full width */}
-                    <div className="col-12 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">LinkedIn URL</label>
                       <input
                         type="url"
@@ -278,7 +278,7 @@ export default function EditCandidate() {
                     </div>
 
                     {/* Skills - Full width */}
-                    <div className="col-12 mb-3">
+                    <div className="col-lg-12 col-md-12 mb-3">
                       <label className="form-label">Skills</label>
                       <Select
                         isMulti
@@ -293,7 +293,7 @@ export default function EditCandidate() {
                     </div>
 
                     {/* Resume - Full width */}
-                    <div className="col-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Resume</label>
                       <input
                         type="text"
@@ -306,7 +306,7 @@ export default function EditCandidate() {
                     </div>
 
                     {/* Status and Location - 2 columns */}
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Candidate Status</label>
                       <Select
                         name="candidate_status"
@@ -331,7 +331,7 @@ export default function EditCandidate() {
                         placeholder="Select status..."
                       />
                     </div>
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Location</label>
                       <Select
                         name="location"
@@ -359,7 +359,7 @@ export default function EditCandidate() {
                     </div>
 
                     {/* Current Company, Job Title, Experience, Notice Period - 4 columns */}
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Current Company</label>
                       <input
                         type="text"
@@ -370,7 +370,7 @@ export default function EditCandidate() {
                         placeholder="Enter current company"
                       />
                     </div>
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Current Job Title</label>
                       <input
                         type="text"
@@ -381,7 +381,7 @@ export default function EditCandidate() {
                         placeholder="Enter current job title"
                       />
                     </div>
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Experience (Years)</label>
                       <Select
                         name="experience_years"
@@ -403,7 +403,7 @@ export default function EditCandidate() {
                         placeholder="Select experience..."
                       />
                     </div>
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Notice Period</label>
                       <Select
                         name="notice_period"
@@ -428,7 +428,7 @@ export default function EditCandidate() {
                     </div>
 
                     {/* CTC, Expected CTC, Employment Type - 3 columns */}
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">CTC (LPA)</label>
                       <input
                         type="text"
@@ -439,7 +439,7 @@ export default function EditCandidate() {
                         placeholder="Current CTC"
                       />
                     </div>
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Expected CTC (LPA)</label>
                       <input
                         type="text"
@@ -450,7 +450,7 @@ export default function EditCandidate() {
                         placeholder="Expected CTC"
                       />
                     </div>
-                    <div className="col-3 col-md-3 mb-3">
+                    <div className="col-lg-3 col-md-12 mb-3">
                       <label className="form-label">Employment Type</label>
                       <Select
                         name="employment_type"
