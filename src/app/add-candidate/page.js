@@ -133,9 +133,19 @@ export default function AddCandidate() {
     <ProtectedRoute>
       <div className="container">
         <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-          <div>
+          <div className="text-start">
             <h1 className="h3 mb-1">Add Candidate</h1>
             <div className="text-muted">Add a new candidate to the system.</div>
+            <div className="d-md-none mt-2">
+              <Link href="/candidates" className="btn btn-outline-secondary btn-sm">
+                ← Back to Candidates
+              </Link>
+            </div>
+          </div>
+          <div className="d-none d-md-block">
+            <Link href="/candidates" className="btn btn-outline-secondary btn-sm">
+              ← Back to Candidates
+            </Link>
           </div>
         </div>
 

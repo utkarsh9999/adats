@@ -192,15 +192,16 @@ export default function Candidates() {
                     <th style={{ minWidth: '80px' }}>Experience</th>
                     <th style={{ minWidth: '150px' }}>Notice Period</th>
                     <th style={{ minWidth: '220px' }}>LinkedIn URL</th>
+                    <th style={{ minWidth: '220px' }}>Resume Link</th>
                     <th style={{ minWidth: '100px' }}>CTC (LPA)</th>
-                    <th style={{ minWidth: '120px' }}>Expected CTC (LPA)</th>
+                    <th style={{ minWidth: '150px' }}>Expected CTC (LPA)</th>
                     <th className="text-center" id={"actions"}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentCandidates.length === 0 ? (
                     <tr>
-                      <td colSpan="12" className="text-muted">No candidates yet.</td>
+                      <td colSpan="13" className="text-muted">No candidates yet.</td>
                     </tr>
                   ) : (
                     currentCandidates.map((candidate) => (
@@ -237,6 +238,20 @@ export default function Candidates() {
                               className="text-primary"
                             >
                               <i className="bi bi-linkedin"></i>{candidate.linkedin_url}
+                            </a>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
+                        <td>
+                          {candidate.resume ? (
+                            <a 
+                              href={candidate.resume} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-primary"
+                            >
+                              <i className="bi bi-file-earmark-text"></i> View Resume
                             </a>
                           ) : (
                             '-'
