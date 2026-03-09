@@ -45,26 +45,36 @@ export default function EditCandidate() {
   console.log('Skills select value:', skillsSelectValue)
 
   const skillsOptions = [
-    { value: 'Java', label: 'Java' },
-    { value: 'JavaScript', label: 'JavaScript' },
-    { value: 'Python', label: 'Python' },
-    { value: 'React', label: 'React' },
-    { value: 'Node.js', label: 'Node.js' },
-    { value: 'SQL', label: 'SQL' },
-    { value: 'MongoDB', label: 'MongoDB' },
-    { value: 'Docker', label: 'Docker' },
-    { value: 'AWS', label: 'AWS' },
-    { value: 'Git', label: 'Git' },
-    { value: 'REST API', label: 'REST API' },
-    { value: 'GraphQL', label: 'GraphQL' },
-    { value: 'TypeScript', label: 'TypeScript' },
-    { value: 'HTML/CSS', label: 'HTML/CSS' },
-    { value: 'CTRM', label: 'CTRM' },
-    { value: 'Endur', label: 'Endur' },
-    { value: 'Testing', label: 'Testing' },
-    { value: 'Agile', label: 'Agile' },
-    { value: 'Scrum', label: 'Scrum' }
-  ]
+                    { value: 'Java', label: 'Java' },
+                    { value: 'C#', label: 'C#' },
+                    { value: 'SQL', label: 'SQL' },
+                    { value: 'Python', label: 'Python' },
+                    { value: 'Endur (Openlink)', label: 'Endur (Openlink)' },
+                    { value: 'Allegro', label: 'Allegro' },
+                    { value: 'RightAngle', label: 'RightAngle' },
+                    { value: 'TriplePoint (ION)', label: 'TriplePoint (ION)' },
+                    { value: 'Aspect CTRM', label: 'Aspect CTRM' },
+                    { value: 'Enuit', label: 'Enuit' },
+                    { value: 'Brady CTRM', label: 'Brady CTRM' },
+                    { value: 'ETRM', label: 'ETRM' },
+                    { value: 'CTRM', label: 'CTRM' },
+                    { value: 'Physical Trading', label: 'Physical Trading' },
+                    { value: 'Derivatives Trading', label: 'Derivatives Trading' },
+                    { value: 'Risk Management', label: 'Risk Management' },
+                    { value: 'Market Risk (VaR)', label: 'Market Risk (VaR)' },
+                    { value: 'Credit Risk', label: 'Credit Risk' },
+                    { value: 'PnL Reporting', label: 'PnL Reporting' },
+                    { value: 'Trade Lifecycle Management', label: 'Trade Lifecycle Management' },
+                    { value: 'Hedging Strategies', label: 'Hedging Strategies' },
+                    { value: 'Deal Modeling', label: 'Deal Modeling' },
+                    { value: 'AVS / JVS (Endur)', label: 'AVS / JVS (Endur)' },
+                    { value: 'OpenJVS', label: 'OpenJVS' },
+                    { value: 'Report Builder', label: 'Report Builder' },
+                    { value: 'Interfaces & Integration', label: 'Interfaces & Integration' },
+                    { value: 'Data Migration', label: 'Data Migration' },
+                    { value: 'System Implementation', label: 'System Implementation' },
+                    { value: 'UAT Support', label: 'UAT Support' }
+                  ];
 
   useEffect(() => {
     if (id) {
@@ -173,30 +183,10 @@ export default function EditCandidate() {
         </div>
       )
       
-      // Reset form
-      setFormData({
-        full_name: '',
-        email: '',
-        phone: '',
-        skills: [],
-        linkedin_url: '',
-        resume: '',
-        candidate_status: 'new',
-        location: '',
-        current_company: '',
-        current_job_title: '',
-        experience_years: '',
-        notice_period: '',
-        ctc: '',
-        expected_ctc: '',
-        employment_type: '',
-        notes: ''
-      })
-
-      // Clear success message after 3 seconds
+      // Clear success message after 10 seconds
       setTimeout(() => {
         setSuccess('')
-      }, 3000)
+      }, 7000)
     } catch (err) {
       console.error('Update error:', err)
       setError(err.message || 'Failed to update candidate. Please try again.')

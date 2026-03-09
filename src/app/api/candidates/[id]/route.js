@@ -74,9 +74,50 @@ export async function PUT(request, { params }) {
     const id = parseInt(resolvedParams.id)
     const updateData = await request.json()
     
+    console.log('=== PUT REQUEST START ===')
     console.log('PUT request - resolvedParams:', resolvedParams)
     console.log('PUT request - id:', id)
     console.log('PUT request - updateData:', updateData)
+    
+    // Validate ID
+    if (isNaN(id) || id <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid candidate ID' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate required fields
+    if (!updateData.full_name || !updateData.full_name.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Full name is required' },
+        { status: 400 }
+      )
+    }
+    
+    if (!updateData.email || !updateData.email.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Email is required' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(updateData.email)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate phone format (basic validation)
+    if (updateData.phone && !/^[\d\s\-\+\(\)]+$/.test(updateData.phone)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid phone format' },
+        { status: 400 }
+      )
+    }
     
     // Check if candidate exists
     const candidate = await executeQuery(
@@ -117,10 +158,39 @@ export async function PUT(request, { params }) {
       'employment_type', 'notes'
     ]
     
+    // Validate and sanitize each field
     allowedFields.forEach(field => {
       if (updateData[field] !== undefined) {
+        let value = updateData[field]
+        
+        // Sanitize string fields
+        if (typeof value === 'string') {
+          value = value.trim()
+        }
+        
+        // Handle skills array
+        if (field === 'skills') {
+          if (Array.isArray(value) && value.length > 0) {
+            // Filter out empty skills and trim
+            const cleanSkills = value
+              .filter(skill => skill && typeof skill === 'string')
+              .map(skill => skill.trim())
+              .filter(skill => skill.length > 0)
+            value = JSON.stringify(cleanSkills)
+          } else {
+            value = null
+          }
+        }
+        
+        // Validate numeric fields
+        if (field === 'ctc' || field === 'expected_ctc') {
+          if (value && !/^\d+(\.\d{1,2})?$/.test(value)) {
+            throw new Error(`Invalid ${field} format. Must be a number`)
+          }
+        }
+        
         updateFields.push(`${field} = ?`)
-        updateValues.push(field === 'skills' ? (updateData[field] && updateData[field].length > 0 ? JSON.stringify(updateData[field]) : null) : updateData[field])
+        updateValues.push(value)
       }
     })
     
@@ -131,12 +201,19 @@ export async function PUT(request, { params }) {
       )
     }
     
+    // Add updated_at timestamp
+    updateFields.push('updated_at = CURRENT_TIMESTAMP')
     updateValues.push(id)
+    
+    console.log('Update query fields:', updateFields)
+    console.log('Update values:', updateValues)
     
     await executeQuery(
       `UPDATE candidates SET ${updateFields.join(', ')} WHERE id = ?`,
       updateValues
     )
+    
+    console.log('Database update completed')
     
     // Get updated candidate
     const updatedCandidate = await executeQuery(
@@ -147,29 +224,32 @@ export async function PUT(request, { params }) {
     // Parse skills from comma-separated string to array (handle both JSON and string formats)
     let formattedCandidate
     try {
-      const candidate = updatedCandidate[0]
+      const candidateData = updatedCandidate[0]
       
-      if (!candidate.skills) {
-        formattedCandidate = { ...candidate, skills: [] }
-      } else if (Array.isArray(candidate.skills)) {
-        formattedCandidate = { ...candidate, skills: candidate.skills }
-      } else if (typeof candidate.skills === 'string') {
+      if (!candidateData.skills) {
+        formattedCandidate = { ...candidateData, skills: [] }
+      } else if (Array.isArray(candidateData.skills)) {
+        formattedCandidate = { ...candidateData, skills: candidateData.skills }
+      } else if (typeof candidateData.skills === 'string') {
         try {
-          const parsed = JSON.parse(candidate.skills)
-          formattedCandidate = { ...candidate, skills: Array.isArray(parsed) ? parsed : [] }
+          const parsed = JSON.parse(candidateData.skills)
+          formattedCandidate = { ...candidateData, skills: Array.isArray(parsed) ? parsed : [] }
         } catch {
           formattedCandidate = { 
-            ...candidate, 
-            skills: candidate.skills.split(',').filter(skill => skill.trim()) 
+            ...candidateData, 
+            skills: candidateData.skills.split(',').filter(skill => skill.trim()) 
           }
         }
       } else {
-        formattedCandidate = { ...candidate, skills: [] }
+        formattedCandidate = { ...candidateData, skills: [] }
       }
     } catch (error) {
-      console.error('Error parsing skills:', error)
+      console.error('Error parsing skills in PUT response:', error)
       formattedCandidate = { ...updatedCandidate[0], skills: [] }
     }
+    
+    console.log('=== PUT REQUEST END (SUCCESS) ===')
+    console.log('Updated candidate:', formattedCandidate)
     
     return NextResponse.json({
       success: true,

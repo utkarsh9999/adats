@@ -2,31 +2,92 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Select from 'react-select'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { candidatesAPI } from '../../services/api'
 
 export default function Candidates() {
   const [candidates, setCandidates] = useState([])
+  const [filteredCandidates, setFilteredCandidates] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCandidates, setTotalCandidates] = useState(0)
+  const [selectedSkills, setSelectedSkills] = useState([])
   
   const candidatesPerPage = 5
-  const totalPages = Math.ceil(totalCandidates / candidatesPerPage)
+  const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage)
   const indexOfLastCandidate = currentPage * candidatesPerPage
   const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage
-  const currentCandidates = candidates.slice(indexOfFirstCandidate, indexOfLastCandidate)
+  const currentCandidates = filteredCandidates.slice(indexOfFirstCandidate, indexOfLastCandidate)
+
+  // Skills options for search
+  const skillsOptions = [
+    { value: 'Java', label: 'Java' },
+    { value: 'C#', label: 'C#' },
+    { value: 'SQL', label: 'SQL' },
+    { value: 'Python', label: 'Python' },
+    { value: 'Endur (Openlink)', label: 'Endur (Openlink)' },
+    { value: 'Allegro', label: 'Allegro' },
+    { value: 'RightAngle', label: 'RightAngle' },
+    { value: 'TriplePoint (ION)', label: 'TriplePoint (ION)' },
+    { value: 'Aspect CTRM', label: 'Aspect CTRM' },
+    { value: 'Enuit', label: 'Enuit' },
+    { value: 'Brady CTRM', label: 'Brady CTRM' },
+    { value: 'ETRM', label: 'ETRM' },
+    { value: 'CTRM', label: 'CTRM' },
+    { value: 'Physical Trading', label: 'Physical Trading' },
+    { value: 'Derivatives Trading', label: 'Derivatives Trading' },
+    { value: 'Risk Management', label: 'Risk Management' },
+    { value: 'Market Risk (VaR)', label: 'Market Risk (VaR)' },
+    { value: 'Credit Risk', label: 'Credit Risk' },
+    { value: 'PnL Reporting', label: 'PnL Reporting' },
+    { value: 'Trade Lifecycle Management', label: 'Trade Lifecycle Management' },
+    { value: 'Hedging Strategies', label: 'Hedging Strategies' },
+    { value: 'Deal Modeling', label: 'Deal Modeling' },
+    { value: 'AVS / JVS (Endur)', label: 'AVS / JVS (Endur)' },
+    { value: 'OpenJVS', label: 'OpenJVS' },
+    { value: 'Report Builder', label: 'Report Builder' },
+    { value: 'Interfaces & Integration', label: 'Interfaces & Integration' },
+    { value: 'Data Migration', label: 'Data Migration' },
+    { value: 'System Implementation', label: 'System Implementation' },
+    { value: 'UAT Support', label: 'UAT Support' }
+  ]
 
   useEffect(() => {
     loadCandidates()
   }, [])
+
+  useEffect(() => {
+    // Filter candidates based on selected skills
+    if (selectedSkills.length === 0) {
+      setFilteredCandidates(candidates)
+    } else {
+      const filtered = candidates.filter(candidate => {
+        if (!candidate.skills || candidate.skills.length === 0) return false
+        
+        const candidateSkills = Array.isArray(candidate.skills) 
+          ? candidate.skills 
+          : (typeof candidate.skills === 'string' ? candidate.skills.split(',') : [])
+        
+        // Check if candidate has ALL selected skills
+        return selectedSkills.every(selectedSkill => 
+          candidateSkills.some(candidateSkill => 
+            candidateSkill.toLowerCase().includes(selectedSkill.value.toLowerCase())
+          )
+        )
+      })
+      setFilteredCandidates(filtered)
+    }
+    setCurrentPage(1) // Reset to first page when filtering
+  }, [candidates, selectedSkills])
 
   const loadCandidates = async () => {
     try {
       setLoading(true)
       const data = await candidatesAPI.getAll()
       setCandidates(data)
+      setFilteredCandidates(data)
       setTotalCandidates(data.length)
     } catch (err) {
       setError(err.message || 'Failed to load candidates')
@@ -41,7 +102,7 @@ export default function Candidates() {
       'screening': 'info',
       'shortlisted': 'primary',
       'interview': 'warning',
-      'offer': 'success',
+      'offer': 'primary',
       'hired': 'success',
       'rejected': 'danger'
     }
@@ -100,8 +161,25 @@ export default function Candidates() {
           <div className="card-body">
             {error && <div className="alert alert-danger">{error}</div>}
             
+            {/* Skills Search Bar */}
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <label className="form-label">Filter by Skills</label>
+                <Select
+                  isMulti
+                  name="skills"
+                  options={skillsOptions}
+                  value={selectedSkills}
+                  onChange={setSelectedSkills}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                  placeholder="Select skills to filter candidates..."
+                />
+              </div>
+            </div>
+            
             <div className="table-responsive" id={"candidates-table"}>
-              <table className="table align-middle mb-0 table-bordered">
+              <table className="table align-middle mb-0 table-bordered" style={{minHeight:"auto"}}>
                 <thead>
                   <tr>
                     <th style={{ minWidth: '100px' }}>Name</th>
@@ -112,14 +190,17 @@ export default function Candidates() {
                     <th style={{ minWidth: '80px' }}>Location</th>
                     <th style={{ minWidth: '80px' }}>Company</th>
                     <th style={{ minWidth: '80px' }}>Experience</th>
+                    <th style={{ minWidth: '150px' }}>Notice Period</th>
                     <th style={{ minWidth: '220px' }}>LinkedIn URL</th>
+                    <th style={{ minWidth: '100px' }}>CTC (LPA)</th>
+                    <th style={{ minWidth: '120px' }}>Expected CTC (LPA)</th>
                     <th className="text-center" id={"actions"}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentCandidates.length === 0 ? (
                     <tr>
-                      <td colSpan="9" className="text-muted">No candidates yet.</td>
+                      <td colSpan="12" className="text-muted">No candidates yet.</td>
                     </tr>
                   ) : (
                     currentCandidates.map((candidate) => (
@@ -145,7 +226,8 @@ export default function Candidates() {
                         </td>
                         <td>{candidate.location || ''}</td>
                         <td>{candidate.current_company || ''}</td>
-                        <td>{candidate.experience_years || ''}</td>
+                        <td>{candidate.experience_years +' Years' || ''}</td>
+                        <td>{candidate.notice_period ? (candidate.notice_period === 'immediate_notice' ? 'Immediate' : candidate.notice_period.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())) : ''}</td>
                         <td>
                           {candidate.linkedin_url ? (
                             <a 
@@ -160,6 +242,8 @@ export default function Candidates() {
                             '-'
                           )}
                         </td>
+                        <td>{candidate.ctc || ''}</td>
+                        <td>{candidate.expected_ctc || ''}</td>
                         <td className="text-center" id={"actions"}>
                           <div className="btn-group" role="group">
                             <Link 
