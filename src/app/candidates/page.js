@@ -163,7 +163,7 @@ export default function Candidates() {
             
             {/* Skills Search Bar */}
             <div className="row mb-3">
-              <div className="col-md-6">
+              <div className="col-lg-12">
                 <label className="form-label">Filter by Skills</label>
                 <Select
                   isMulti

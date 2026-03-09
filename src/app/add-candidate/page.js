@@ -252,7 +252,7 @@ export default function AddCandidate() {
                   name="resume"
                   value={formData.resume}
                   onChange={handleInputChange}
-                  placeholder="Resume file path or URL"
+                  placeholder="Resume (Google Drive) URL"
                 />
               </div>
 
