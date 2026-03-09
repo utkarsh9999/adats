@@ -11,7 +11,7 @@ export default function AddCandidate() {
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
-    phone: '',
+    phone: '+91 ',
     skills: [],
     linkedin_url: '',
     resume: '',
@@ -33,10 +33,37 @@ export default function AddCandidate() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    
+    // Phone validation
+    if (name === "phone") {
+
+  let value = e.target.value
+
+  // Always keep +91 prefix
+  if (!value.startsWith("+91")) {
+    value = "+91"
+  }
+
+  // Extract digits after +91
+  let digits = value.slice(3).replace(/\D/g, "")
+
+  // Limit to 10 digits
+  digits = digits.slice(0, 10)
+
+  const phoneValue = "+91 " + digits
+
+  setFormData(prev => ({
+    ...prev,
+    phone: phoneValue
+  }))
+
+  return
+} else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }))
+    }
   }
 
   const handleSkillsChange = (selectedOptions) => {
@@ -97,11 +124,11 @@ export default function AddCandidate() {
         </div>
       )
       
-      // Reset form
+      // Reset form (but preserve phone to avoid validation loop)
       setFormData({
         full_name: '',
         email: '',
-        phone: '',
+        phone: formData.phone, // Preserve phone value
         skills: [],
         linkedin_url: '',
         resume: '',

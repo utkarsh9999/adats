@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 
 export default function LayoutClient({ children }) {
   const [username, setUsername] = useState('')
+  const [authChecked, setAuthChecked] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -21,6 +22,9 @@ export default function LayoutClient({ children }) {
       localStorage.removeItem('username')
       localStorage.removeItem('auth_logged_in')
     }
+
+    // Mark auth as checked
+    setAuthChecked(true)
 
     // Initialize Bootstrap dropdowns
     if (typeof window !== 'undefined') {
@@ -42,7 +46,7 @@ export default function LayoutClient({ children }) {
 
   return (
     <>
-      {pathname !== '/login' && (
+      {pathname !== '/login' && authChecked && (
         <nav className="navbar navbar-expand-lg navbar-white bg-white fixed-top shadow-sm" style={{ marginBottom: '5rem' }}>
           <div className="container">
             <Link href="/dashboard" className="navbar-brand">
@@ -132,7 +136,7 @@ export default function LayoutClient({ children }) {
         </nav>
       )}
 
-      <main style={{ marginTop: pathname === '/login' ? '0' : '80px' }}>
+      <main style={{ marginTop: pathname === '/login' ? '0' : (authChecked ? '80px' : '0') }}>
         {children}
       </main>
     </>

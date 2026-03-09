@@ -14,6 +14,8 @@ export default function Candidates() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalCandidates, setTotalCandidates] = useState(0)
   const [selectedSkills, setSelectedSkills] = useState([])
+  const [selectedLocation, setSelectedLocation] = useState(null)
+  const [selectedNoticePeriod, setSelectedNoticePeriod] = useState(null)
   
   const candidatesPerPage = 5
   const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage)
@@ -54,16 +56,38 @@ export default function Candidates() {
     { value: 'UAT Support', label: 'UAT Support' }
   ]
 
+  // Location options for search
+  const locationOptions = [
+    { value: 'Remote (India)', label: 'Remote (India)' },
+    { value: 'Bengaluru', label: 'Bengaluru' },
+    { value: 'Hyderabad', label: 'Hyderabad' },
+    { value: 'Mumbai', label: 'Mumbai' },
+    { value: 'Chennai', label: 'Chennai' },
+    { value: 'Delhi', label: 'Delhi' },
+    { value: 'Noida', label: 'Noida' },
+    { value: 'Gurugram', label: 'Gurugram' }
+  ]
+
+  // Notice period options for search
+  const noticePeriodOptions = [
+    { value: 'immediate', label: 'Immediate' },
+    { value: '15_days', label: '15 Days' },
+    { value: '30_days', label: '30 Days' },
+    { value: '60_days', label: '60 Days' },
+    { value: '90_days', label: '90 Days' }
+  ]
+
   useEffect(() => {
     loadCandidates()
   }, [])
 
   useEffect(() => {
-    // Filter candidates based on selected skills
-    if (selectedSkills.length === 0) {
-      setFilteredCandidates(candidates)
-    } else {
-      const filtered = candidates.filter(candidate => {
+    // Filter candidates based on selected skills, location, and notice period
+    let filtered = candidates
+    
+    // Apply skills filter
+    if (selectedSkills.length > 0) {
+      filtered = filtered.filter(candidate => {
         if (!candidate.skills || candidate.skills.length === 0) return false
         
         const candidateSkills = Array.isArray(candidate.skills) 
@@ -77,10 +101,25 @@ export default function Candidates() {
           )
         )
       })
-      setFilteredCandidates(filtered)
     }
+    
+    // Apply location filter
+    if (selectedLocation) {
+      filtered = filtered.filter(candidate => 
+        candidate.location === selectedLocation.value
+      )
+    }
+    
+    // Apply notice period filter
+    if (selectedNoticePeriod) {
+      filtered = filtered.filter(candidate => 
+        candidate.notice_period === selectedNoticePeriod.value
+      )
+    }
+    
+    setFilteredCandidates(filtered)
     setCurrentPage(1) // Reset to first page when filtering
-  }, [candidates, selectedSkills])
+  }, [candidates, selectedSkills, selectedLocation, selectedNoticePeriod])
 
   const loadCandidates = async () => {
     try {
@@ -178,6 +217,36 @@ export default function Candidates() {
               </div>
             </div>
             
+            {/* Location & Notice Period Search Bar */}
+            <div className="row mb-3">
+              <div className="col-lg-3">
+                <label className="form-label">Filter by Location</label>
+                <Select
+                  name="location"
+                  options={locationOptions}
+                  value={selectedLocation}
+                  onChange={setSelectedLocation}
+                  className="basic-single-select"
+                  classNamePrefix="select"
+                  placeholder="Select location to filter candidates..."
+                  isClearable
+                />
+              </div>
+              <div className="col-lg-3">
+                <label className="form-label">Filter by Notice Period</label>
+                <Select
+                  name="noticePeriod"
+                  options={noticePeriodOptions}
+                  value={selectedNoticePeriod}
+                  onChange={setSelectedNoticePeriod}
+                  className="basic-single-select"
+                  classNamePrefix="select"
+                  placeholder="Select notice period..."
+                  isClearable
+                />
+              </div>
+            </div>
+            
             <div className="table-responsive" id={"candidates-table"}>
               <table className="table align-middle mb-0 table-bordered" style={{minHeight:"auto"}}>
                 <thead>
@@ -195,13 +264,15 @@ export default function Candidates() {
                     <th style={{ minWidth: '220px' }}>Resume Link</th>
                     <th style={{ minWidth: '100px' }}>CTC (LPA)</th>
                     <th style={{ minWidth: '150px' }}>Expected CTC (LPA)</th>
-                    <th className="text-center" id={"actions"}>Actions</th>
+                    <th style={{ minWidth: '120px' }}>Date Created</th>
+                    <th style={{ minWidth: '200px' }}>Notes</th>
+                    <th className="text-center" id={"actions"} style={{border:"1px solid grey"}}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentCandidates.length === 0 ? (
                     <tr>
-                      <td colSpan="13" className="text-muted">No candidates yet.</td>
+                      <td colSpan="15" className="text-muted">No candidates yet.</td>
                     </tr>
                   ) : (
                     currentCandidates.map((candidate) => (
@@ -259,6 +330,24 @@ export default function Candidates() {
                         </td>
                         <td>{candidate.ctc || ''}</td>
                         <td>{candidate.expected_ctc || ''}</td>
+                        <td>
+                          {candidate.created_at ? new Date(candidate.created_at).toLocaleDateString() : ''}
+                        </td>
+                        <td>
+                          {candidate.notes ? (
+                            <span title={candidate.notes} style={{ 
+                              display: 'block', 
+                              maxWidth: '180px', 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              whiteSpace: 'nowrap' 
+                            }}>
+                              {candidate.notes}
+                            </span>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
                         <td className="text-center" id={"actions"}>
                           <div className="btn-group" role="group">
                             <Link 
