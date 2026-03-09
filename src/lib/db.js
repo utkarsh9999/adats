@@ -7,10 +7,7 @@ const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false, // Allow self-signed certificates
-    minVersion: 'TLSv1.2'
-  }
+  ssl: false // Hostinger MySQL typically doesn't require SSL
 }
 
 // Create connection pool

@@ -112,7 +112,7 @@ export default function Candidates() {
                     <th style={{ minWidth: '70px' }}>Location</th>
                     <th style={{ minWidth: '70px' }}>Company</th>
                     <th style={{ minWidth: '70px' }}>Experience</th>
-                    <th style={{ minWidth: '170px' }} className="text-end">Actions</th>
+                    <th className="text-center" id={"actions"}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -123,8 +123,8 @@ export default function Candidates() {
                   ) : (
                     currentCandidates.map((candidate) => (
                       <tr key={candidate.id}>
-                        <td>{candidate.full_name}</td>
-                        <td>{candidate.email}</td>
+                        <td>{candidate.full_name || ''}</td>
+                        <td>{candidate.email || ''}</td>
                         <td>{candidate.phone || ''}</td>
                         <td>
                           {candidate.skills && candidate.skills.length > 0 ? (
@@ -145,19 +145,21 @@ export default function Candidates() {
                         <td>{candidate.location || ''}</td>
                         <td>{candidate.current_company || ''}</td>
                         <td>{candidate.experience_years || ''}</td>
-                        <td className="text-end">
-                          <Link 
-                            href={`/edit-candidate/${candidate.id}`} 
-                            className="btn btn-success btn-sm me-1"
-                          >
-                            Edit
-                          </Link>
-                          <button 
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleDelete(candidate.id)}
-                          >
-                            Delete
-                          </button>
+                        <td className="text-center" id={"actions"}>
+                          <div className="btn-group" role="group">
+                            <Link 
+                              href={`/edit-candidate/${candidate.id}`} 
+                              className="btn btn-success btn-sm"
+                            >
+                              Edit
+                            </Link>
+                            <button 
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleDelete(candidate.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
