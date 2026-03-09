@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [newCandidates, setNewCandidates] = useState(0)
   const [interviewCandidates, setInterviewCandidates] = useState(0)
   const [hiredCandidates, setHiredCandidates] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Get username from localStorage
@@ -25,6 +26,7 @@ export default function Dashboard() {
 
   const fetchCandidatesStats = async () => {
     try {
+      setLoading(true)
       const candidates = await candidatesAPI.getAll()
       
       // Calculate statistics
@@ -39,7 +41,23 @@ export default function Dashboard() {
       setHiredCandidates(hiredCandidates)
     } catch (error) {
       console.error('Failed to fetch candidates stats:', error)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <ProtectedRoute>
+        <Container>
+          <div className="text-center py-5">
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Loading dashboard...</span>
+            </div>
+          </div>
+        </Container>
+      </ProtectedRoute>
+    )
   }
 
   return (
