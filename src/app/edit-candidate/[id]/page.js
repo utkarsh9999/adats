@@ -34,6 +34,16 @@ export default function EditCandidate() {
   const params = useParams()
   const id = params.id
 
+  // Computed skills value for React Select
+  const skillsSelectValue = formData.skills.map(skill => 
+    typeof skill === 'string' 
+      ? { value: skill, label: skill }
+      : skill
+  )
+
+  console.log('Current form data skills:', formData.skills)
+  console.log('Skills select value:', skillsSelectValue)
+
   const skillsOptions = [
     { value: 'Java', label: 'Java' },
     { value: 'JavaScript', label: 'JavaScript' },
@@ -66,6 +76,11 @@ export default function EditCandidate() {
     try {
       setLoading(true)
       const data = await candidatesAPI.getById(id)
+      
+      console.log('Loaded candidate data:', data)
+      console.log('Skills from API:', data.skills)
+      console.log('Skills type:', typeof data.skills)
+      console.log('Is skills array?', Array.isArray(data.skills))
       
       // Set form data with loaded candidate data
       setFormData({
@@ -284,7 +299,7 @@ export default function EditCandidate() {
                         isMulti
                         name="skills"
                         options={skillsOptions}
-                        value={formData.skills}
+                        value={skillsSelectValue}
                         onChange={handleSkillsChange}
                         className="basic-multi-select"
                         classNamePrefix="select"

@@ -100,25 +100,26 @@ export default function Candidates() {
           <div className="card-body">
             {error && <div className="alert alert-danger">{error}</div>}
             
-            <div className="table-responsive">
-              <table className="table align-middle mb-0">
+            <div className="table-responsive" id={"candidates-table"}>
+              <table className="table align-middle mb-0 table-bordered">
                 <thead>
                   <tr>
                     <th style={{ minWidth: '100px' }}>Name</th>
                     <th style={{ minWidth: '150px' }}>Email</th>
                     <th style={{ minWidth: '150px' }}>Phone</th>
                     <th style={{ minWidth: '250px' }}>Skills</th>
-                    <th style={{ minWidth: '70px' }}>Status</th>
-                    <th style={{ minWidth: '70px' }}>Location</th>
-                    <th style={{ minWidth: '70px' }}>Company</th>
-                    <th style={{ minWidth: '70px' }}>Experience</th>
+                    <th style={{ minWidth: '80px' }}>Status</th>
+                    <th style={{ minWidth: '80px' }}>Location</th>
+                    <th style={{ minWidth: '80px' }}>Company</th>
+                    <th style={{ minWidth: '80px' }}>Experience</th>
+                    <th style={{ minWidth: '220px' }}>LinkedIn URL</th>
                     <th className="text-center" id={"actions"}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentCandidates.length === 0 ? (
                     <tr>
-                      <td colSpan="8" className="text-muted">No candidates yet.</td>
+                      <td colSpan="9" className="text-muted">No candidates yet.</td>
                     </tr>
                   ) : (
                     currentCandidates.map((candidate) => (
@@ -145,6 +146,20 @@ export default function Candidates() {
                         <td>{candidate.location || ''}</td>
                         <td>{candidate.current_company || ''}</td>
                         <td>{candidate.experience_years || ''}</td>
+                        <td>
+                          {candidate.linkedin_url ? (
+                            <a 
+                              href={candidate.linkedin_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-primary"
+                            >
+                              <i className="bi bi-linkedin"></i>{candidate.linkedin_url}
+                            </a>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
                         <td className="text-center" id={"actions"}>
                           <div className="btn-group" role="group">
                             <Link 

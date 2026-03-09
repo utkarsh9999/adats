@@ -93,3 +93,66 @@ a {
     border: 1px solid rgb(222, 222, 222);
     z-index: 1000 !important;
 }
+
+/* Custom scrollbar for table - Universal styling */
+/* remove radius from table container */
+#candidates-table {
+    max-height: 400px;
+    overflow: auto;
+
+    border-radius: 0 !important;
+}
+
+/* if table is inside bootstrap card */
+.card,
+.card-body,
+.table-responsive {
+    border-radius: 0 !important;
+}
+
+/* scrollbar styling */
+#candidates-table::-webkit-scrollbar {
+    width: 10px;
+}
+
+#candidates-table::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 0 !important;
+}
+
+#candidates-table::-webkit-scrollbar-thumb {
+    background: rgb(0,136,255);
+    border-radius: 0 !important;
+}
+
+#candidates-table::-webkit-scrollbar-thumb:hover {
+    background: #0071dc;
+}
+
+/* Firefox */
+#candidates-table {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(0,136,255) #f1f1f1;
+}
+
+/* Remove shadows from pagination buttons */
+.pagination .page-link,
+.pagination .page-item .page-link {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border: 1px solid #dee2e6;
+}
+
+.pagination .page-link:hover,
+.pagination .page-item .page-link:hover {
+    box-shadow: none !important;
+}
+
+.pagination .page-link:focus,
+.pagination .page-item .page-link:focus {
+    box-shadow: none !important;
+}
+
+.pagination .page-item.active .page-link {
+    box-shadow: none !important;
+}

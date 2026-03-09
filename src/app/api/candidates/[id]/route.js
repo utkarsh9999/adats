@@ -217,24 +217,24 @@ export async function GET(request, { params }) {
     // Parse skills from comma-separated string to array (handle both JSON and string formats)
     let formattedCandidate
     try {
-      const candidate = candidate[0]
+      const candidateData = candidate[0]
       
-      if (!candidate.skills) {
-        formattedCandidate = { ...candidate, skills: [] }
-      } else if (Array.isArray(candidate.skills)) {
-        formattedCandidate = { ...candidate, skills: candidate.skills }
-      } else if (typeof candidate.skills === 'string') {
+      if (!candidateData.skills) {
+        formattedCandidate = { ...candidateData, skills: [] }
+      } else if (Array.isArray(candidateData.skills)) {
+        formattedCandidate = { ...candidateData, skills: candidateData.skills }
+      } else if (typeof candidateData.skills === 'string') {
         try {
-          const parsed = JSON.parse(candidate.skills)
-          formattedCandidate = { ...candidate, skills: Array.isArray(parsed) ? parsed : [] }
+          const parsed = JSON.parse(candidateData.skills)
+          formattedCandidate = { ...candidateData, skills: Array.isArray(parsed) ? parsed : [] }
         } catch {
           formattedCandidate = { 
-            ...candidate, 
-            skills: candidate.skills.split(',').filter(skill => skill.trim()) 
+            ...candidateData, 
+            skills: candidateData.skills.split(',').filter(skill => skill.trim()) 
           }
         }
       } else {
-        formattedCandidate = { ...candidate, skills: [] }
+        formattedCandidate = { ...candidateData, skills: [] }
       }
     } catch (error) {
       console.error('Error parsing skills:', error)
