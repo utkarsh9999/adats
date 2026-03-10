@@ -121,10 +121,37 @@ export default function EditCandidate() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    
+    // Phone validation
+    if (name === "phone") {
+
+      let input = value
+
+      // Always enforce +91 prefix
+      if (!input.startsWith("+91 ")) {
+        input = "+91 "
+      }
+
+      // Extract digits after +91
+      let digits = input.slice(3).replace(/\D/g, "")
+
+      // Limit to 10 digits
+      digits = digits.slice(0, 10)
+
+      const phoneValue = "+91 " + digits
+
+      setFormData(prev => ({
+        ...prev,
+        phone: phoneValue
+      }))
+
+      return
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }))
+    }
   }
 
   const handleSkillsChange = (selectedOptions) => {
@@ -264,8 +291,22 @@ export default function EditCandidate() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        placeholder="Enter phone number"
                         required
+                        onKeyDown={(e) => {
+
+                          const cursorPosition = e.target.selectionStart
+
+                          // Prevent editing +91
+                          if (cursorPosition <= 3 && (e.key === "Backspace" || e.key === "Delete")) {
+                            e.preventDefault()
+                          }
+
+                        }}
+                        onClick={(e) => {
+                          if (e.target.selectionStart < 3) {
+                            e.target.setSelectionRange(3,3)
+                          }
+                        }}
                       />
                     </div>
 

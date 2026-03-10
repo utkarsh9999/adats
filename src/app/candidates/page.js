@@ -203,7 +203,6 @@ export default function Candidates() {
             {/* Skills Search Bar */}
             <div className="row mb-3">
               <div className="col-lg-12">
-                <label className="form-label">Filter by Skills</label>
                 <Select
                   isMulti
                   name="skills"
@@ -220,7 +219,6 @@ export default function Candidates() {
             {/* Location & Notice Period Search Bar */}
             <div className="row mb-3">
               <div className="col-lg-3">
-                <label className="form-label">Filter by Location</label>
                 <Select
                   name="location"
                   options={locationOptions}
@@ -233,7 +231,6 @@ export default function Candidates() {
                 />
               </div>
               <div className="col-lg-3">
-                <label className="form-label">Filter by Notice Period</label>
                 <Select
                   name="noticePeriod"
                   options={noticePeriodOptions}
