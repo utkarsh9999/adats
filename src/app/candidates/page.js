@@ -201,8 +201,8 @@ export default function Candidates() {
             {error && <div className="alert alert-danger">{error}</div>}
             
             {/* Skills Search Bar */}
-            <div className="row mb-3">
-              <div className="col-lg-12">
+            <div className="row ">
+              <div className="col-lg-12 mb-3">
                 <Select
                   isMulti
                   name="skills"
@@ -217,8 +217,8 @@ export default function Candidates() {
             </div>
             
             {/* Location & Notice Period Search Bar */}
-            <div className="row mb-3">
-              <div className="col-lg-3">
+            <div className="row">
+              <div className="col-lg-3 mb-3">
                 <Select
                   name="location"
                   options={locationOptions}
@@ -230,7 +230,7 @@ export default function Candidates() {
                   isClearable
                 />
               </div>
-              <div className="col-lg-3">
+              <div className="col-lg-3 mb-3">
                 <Select
                   name="noticePeriod"
                   options={noticePeriodOptions}

@@ -1,6 +1,34 @@
 import { NextResponse } from 'next/server'
 import { executeQuery } from '../../../../lib/db'
 
+async function upsertSkillId(skillName) {
+  const existing = await executeQuery('SELECT id FROM skills WHERE name = ?', [skillName])
+  if (existing.length > 0) return existing[0].id
+  const ins = await executeQuery('INSERT INTO skills (name) VALUES (?)', [skillName])
+  return ins.insertId
+}
+
+async function replaceCandidateSkills(candidateId, skills) {
+  await executeQuery('DELETE FROM candidate_skills WHERE candidate_id = ?', [candidateId])
+  for (const raw of skills) {
+    const name = String(raw).trim()
+    if (!name) continue
+    const skillId = await upsertSkillId(name)
+    await executeQuery(
+      'INSERT IGNORE INTO candidate_skills (candidate_id, skill_id) VALUES (?, ?)',
+      [candidateId, skillId]
+    )
+  }
+}
+
+async function loadCandidateSkills(candidateId) {
+  const rows = await executeQuery(
+    'SELECT s.name FROM candidate_skills cs JOIN skills s ON cs.skill_id = s.id WHERE cs.candidate_id = ?',
+    [candidateId]
+  )
+  return rows.map(r => r.name)
+}
+
 // DELETE /api/candidates/[id] - Delete a candidate
 export async function DELETE(request, { params }) {
   try {
@@ -152,7 +180,7 @@ export async function PUT(request, { params }) {
     const updateValues = []
     
     const allowedFields = [
-      'full_name', 'email', 'phone', 'skills', 'linkedin_url', 'resume',
+      'full_name', 'email', 'phone', 'linkedin_url', 'resume',
       'candidate_status', 'location', 'current_company', 'current_job_title',
       'experience_years', 'notice_period', 'ctc', 'expected_ctc',
       'employment_type', 'notes'
@@ -166,20 +194,6 @@ export async function PUT(request, { params }) {
         // Sanitize string fields
         if (typeof value === 'string') {
           value = value.trim()
-        }
-        
-        // Handle skills array
-        if (field === 'skills') {
-          if (Array.isArray(value) && value.length > 0) {
-            // Filter out empty skills and trim
-            const cleanSkills = value
-              .filter(skill => skill && typeof skill === 'string')
-              .map(skill => skill.trim())
-              .filter(skill => skill.length > 0)
-            value = JSON.stringify(cleanSkills)
-          } else {
-            value = null
-          }
         }
         
         // Validate numeric fields
@@ -212,45 +226,29 @@ export async function PUT(request, { params }) {
       `UPDATE candidates SET ${updateFields.join(', ')} WHERE id = ?`,
       updateValues
     )
+
+    // Update skills mappings if provided
+    if (updateData.skills !== undefined) {
+      const skillsArr = Array.isArray(updateData.skills)
+        ? updateData.skills
+        : []
+      await replaceCandidateSkills(id, skillsArr)
+    }
     
     console.log('Database update completed')
-    
+
     // Get updated candidate
     const updatedCandidate = await executeQuery(
       'SELECT * FROM candidates WHERE id = ?',
       [id]
     )
-    
-    // Parse skills from comma-separated string to array (handle both JSON and string formats)
-    let formattedCandidate
-    try {
-      const candidateData = updatedCandidate[0]
-      
-      if (!candidateData.skills) {
-        formattedCandidate = { ...candidateData, skills: [] }
-      } else if (Array.isArray(candidateData.skills)) {
-        formattedCandidate = { ...candidateData, skills: candidateData.skills }
-      } else if (typeof candidateData.skills === 'string') {
-        try {
-          const parsed = JSON.parse(candidateData.skills)
-          formattedCandidate = { ...candidateData, skills: Array.isArray(parsed) ? parsed : [] }
-        } catch {
-          formattedCandidate = { 
-            ...candidateData, 
-            skills: candidateData.skills.split(',').filter(skill => skill.trim()) 
-          }
-        }
-      } else {
-        formattedCandidate = { ...candidateData, skills: [] }
-      }
-    } catch (error) {
-      console.error('Error parsing skills in PUT response:', error)
-      formattedCandidate = { ...updatedCandidate[0], skills: [] }
-    }
-    
+
+    const skillsArray = await loadCandidateSkills(id)
+    const formattedCandidate = { ...updatedCandidate[0], skills: skillsArray }
+
     console.log('=== PUT REQUEST END (SUCCESS) ===')
     console.log('Updated candidate:', formattedCandidate)
-    
+
     return NextResponse.json({
       success: true,
       data: formattedCandidate,
@@ -294,32 +292,8 @@ export async function GET(request, { params }) {
       )
     }
     
-    // Parse skills from comma-separated string to array (handle both JSON and string formats)
-    let formattedCandidate
-    try {
-      const candidateData = candidate[0]
-      
-      if (!candidateData.skills) {
-        formattedCandidate = { ...candidateData, skills: [] }
-      } else if (Array.isArray(candidateData.skills)) {
-        formattedCandidate = { ...candidateData, skills: candidateData.skills }
-      } else if (typeof candidateData.skills === 'string') {
-        try {
-          const parsed = JSON.parse(candidateData.skills)
-          formattedCandidate = { ...candidateData, skills: Array.isArray(parsed) ? parsed : [] }
-        } catch {
-          formattedCandidate = { 
-            ...candidateData, 
-            skills: candidateData.skills.split(',').filter(skill => skill.trim()) 
-          }
-        }
-      } else {
-        formattedCandidate = { ...candidateData, skills: [] }
-      }
-    } catch (error) {
-      console.error('Error parsing skills:', error)
-      formattedCandidate = { ...candidate[0], skills: [] }
-    }
+    const skillsArray = await loadCandidateSkills(id)
+    const formattedCandidate = { ...candidate[0], skills: skillsArray }
     
     return NextResponse.json({
       success: true,

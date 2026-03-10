@@ -66,12 +66,12 @@ export default function LayoutClient({ children }) {
             <div className="collapse navbar-collapse" id="navbarNav">
               <ul className="navbar-nav me-auto">
                 <li className="nav-item">
-                  <Link href="/dashboard" className="nav-link">
+                  <Link href="/dashboard" className="nav-link" style={{fontWeight:"bold"}}>
                     Home
                   </Link>
                 </li>
                 {username && (
-                  <li className="nav-item dropdown">
+                  <li className="nav-item dropdown" style={{fontWeight:"bold"}}>
                     <a 
                       className="nav-link dropdown-toggle" 
                       href="#" 
@@ -82,9 +82,9 @@ export default function LayoutClient({ children }) {
                     >
                       Candidates
                     </a>
-                    <ul className="dropdown-menu" aria-labelledby="candidatesDropdown">
-                      <li>
-                        <Link href="/candidates" className="dropdown-item">
+                    <ul className="dropdown-menu" aria-labelledby="candidatesDropdown" style={{fontWeight:"bold"}}>
+                      <li >
+                        <Link href="/candidates" className="dropdown-item" >
                           Manage Candidates
                         </Link>
                       </li>

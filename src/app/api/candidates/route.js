@@ -10,6 +10,48 @@ async function ensureInitialized() {
   }
 }
 
+// Process skills array and create mappings
+async function processSkillsArray(candidateId, skills) {
+  try {
+    console.log('Processing skills for candidate:', candidateId, 'Skills:', skills)
+    
+    for (const skill of skills) {
+      // Check if skill exists in skills table
+      let skillRow = await executeQuery(
+        'SELECT id FROM skills WHERE name = ?',
+        [skill]
+      )
+      
+      let skillId
+      
+      if (skillRow.length === 0) {
+        // Create new skill if it doesn't exist
+        console.log('Creating new skill:', skill)
+        const newSkill = await executeQuery(
+          'INSERT INTO skills (name) VALUES (?)',
+          [skill]
+        )
+        skillId = newSkill.insertId
+      } else {
+        // Use existing skill
+        skillId = skillRow[0].id
+      }
+      
+      // Create mapping between candidate and skill
+      console.log('Creating mapping: candidate', candidateId, 'skill', skillId)
+      await executeQuery(
+        'INSERT INTO candidate_skills (candidate_id, skill_id) VALUES (?, ?)',
+        [candidateId, skillId]
+      )
+    }
+    
+    console.log('Skills processing completed for candidate:', candidateId)
+  } catch (error) {
+    console.error('Error processing skills:', error)
+    throw error
+  }
+}
+
 // GET /api/candidates - Get all candidates
 export async function GET() {
   try {
@@ -22,40 +64,20 @@ export async function GET() {
     )
     console.log('Raw candidates from database:', candidates)
     
-    // Parse skills from comma-separated string to array (handle both JSON and string formats)
-    const formattedCandidates = candidates.map(candidate => {
+    // Always return skills from normalized mapping table
+    const formattedCandidates = await Promise.all(candidates.map(async candidate => {
       try {
-        if (!candidate.skills) {
-          return { ...candidate, skills: [] }
-        }
-        
-        // If it's already an array (JSON parsed), return as is
-        if (Array.isArray(candidate.skills)) {
-          return { ...candidate, skills: candidate.skills }
-        }
-        
-        // If it's a string, split it
-        if (typeof candidate.skills === 'string') {
-          // Try to parse as JSON first (for old data)
-          try {
-            const parsed = JSON.parse(candidate.skills)
-            return { ...candidate, skills: Array.isArray(parsed) ? parsed : [] }
-          } catch {
-            // If JSON parsing fails, treat as comma-separated string
-            return { 
-              ...candidate, 
-              skills: candidate.skills.split(',').filter(skill => skill.trim()) 
-            }
-          }
-        }
-        
-        // Fallback to empty array
-        return { ...candidate, skills: [] }
+        const candidateSkills = await executeQuery(
+          'SELECT s.name FROM candidate_skills cs JOIN skills s ON cs.skill_id = s.id WHERE cs.candidate_id = ?',
+          [candidate.id]
+        )
+        const skillsArray = candidateSkills.map(skill => skill.name)
+        return { ...candidate, skills: skillsArray }
       } catch (error) {
-        console.error('Error parsing skills for candidate:', candidate.id, error)
+        console.error('Error loading skills for candidate:', candidate.id, error)
         return { ...candidate, skills: [] }
       }
-    })
+    }))
     
     console.log('Formatted candidates:', formattedCandidates)
     
@@ -114,7 +136,6 @@ export async function POST(request) {
       full_name: candidateData.full_name,
       email: candidateData.email,
       phone: candidateData.phone || null,
-      skills: candidateData.skills && candidateData.skills.length > 0 ? JSON.stringify(candidateData.skills) : null,
       linkedin_url: candidateData.linkedin_url || null,
       resume: candidateData.resume || null,
       candidate_status: candidateData.candidate_status || 'new',
@@ -130,22 +151,18 @@ export async function POST(request) {
     }
     
     console.log('Inserting candidate with data:', insertData)
-    console.log('Skills being inserted:', insertData.skills)
-    console.log('Skills type:', typeof insertData.skills)
-    
     // Insert new candidate
     const result = await executeQuery(
       `INSERT INTO candidates (
-        full_name, email, phone, skills, linkedin_url, resume, 
+        full_name, email, phone, linkedin_url, resume, 
         candidate_status, location, current_company, current_job_title,
         experience_years, notice_period, ctc, expected_ctc, 
         employment_type, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         insertData.full_name,
         insertData.email,
         insertData.phone,
-        insertData.skills,
         insertData.linkedin_url,
         insertData.resume,
         insertData.candidate_status,
@@ -163,47 +180,23 @@ export async function POST(request) {
     
     console.log('Insert result:', result)
     
+    // Process skills array and create mappings
+    if (candidateData.skills && Array.isArray(candidateData.skills) && candidateData.skills.length > 0) {
+      console.log('Processing skills array for new candidate:', result.insertId)
+      await processSkillsArray(result.insertId, candidateData.skills)
+    }
+    
     // Get the created candidate
     const newCandidate = await executeQuery(
       'SELECT * FROM candidates WHERE id = ?',
       [result.insertId]
     )
     
-    // Parse skills from database (handle both JSON and string formats)
-    let skillsArray = []
-    if (newCandidate[0].skills) {
-      // If it's already an array, use it directly
-      if (Array.isArray(newCandidate[0].skills)) {
-        skillsArray = newCandidate[0].skills
-      }
-      // If it's a string, try to parse as JSON first, then split
-      else if (typeof newCandidate[0].skills === 'string') {
-        try {
-          // Try JSON parse first
-          const parsed = JSON.parse(newCandidate[0].skills)
-          skillsArray = Array.isArray(parsed) ? parsed : []
-        } catch {
-          // If JSON parse fails, treat as comma-separated string
-          skillsArray = newCandidate[0].skills.split(',').map(skill => skill.trim()).filter(skill => skill)
-        }
-      }
-      // If it's an object, convert to array
-      else if (typeof newCandidate[0].skills === 'object') {
-        skillsArray = Object.values(newCandidate[0].skills).filter(skill => skill)
-      }
-      // Fallback: convert to string and handle
-      else {
-        const stringSkills = String(newCandidate[0].skills)
-        if (stringSkills) {
-          try {
-            const parsed = JSON.parse(stringSkills)
-            skillsArray = Array.isArray(parsed) ? parsed : []
-          } catch {
-            skillsArray = stringSkills.split(',').map(skill => skill.trim()).filter(skill => skill)
-          }
-        }
-      }
-    }
+    const candidateSkills = await executeQuery(
+      'SELECT s.name FROM candidate_skills cs JOIN skills s ON cs.skill_id = s.id WHERE cs.candidate_id = ?',
+      [result.insertId]
+    )
+    const skillsArray = candidateSkills.map(s => s.name)
     
     const formattedCandidate = {
       ...newCandidate[0],
