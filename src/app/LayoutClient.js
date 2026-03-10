@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
+import LoggedInNavbar from '../components/LoggedInNavbar'
 
 export default function LayoutClient({ children }) {
   const [username, setUsername] = useState('')
@@ -18,6 +18,7 @@ export default function LayoutClient({ children }) {
     if (user && authStatus === 'true') {
       setUsername(user)
     } else {
+      setUsername('')
       // Clear any inconsistent auth state
       localStorage.removeItem('username')
       localStorage.removeItem('auth_logged_in')
@@ -25,18 +26,7 @@ export default function LayoutClient({ children }) {
 
     // Mark auth as checked
     setAuthChecked(true)
-
-    // Initialize Bootstrap dropdowns
-    if (typeof window !== 'undefined') {
-      import('bootstrap').then((bootstrap) => {
-        // Initialize all dropdowns
-        const dropdownElements = document.querySelectorAll('[data-bs-toggle="dropdown"]')
-        dropdownElements.forEach(element => {
-          new bootstrap.Dropdown(element)
-        })
-      })
-    }
-  }, [])
+  }, [pathname])
 
   const handleLogout = () => {
     localStorage.removeItem('username')
@@ -46,91 +36,22 @@ export default function LayoutClient({ children }) {
 
   const showNavbar = pathname !== '/login' && authChecked && !!username
 
+  useEffect(() => {
+    if (!showNavbar) return
+    if (typeof window === 'undefined') return
+
+    import('bootstrap').then((bootstrap) => {
+      const dropdownElements = document.querySelectorAll('[data-bs-toggle="dropdown"]')
+      dropdownElements.forEach(element => {
+        new bootstrap.Dropdown(element)
+      })
+    })
+  }, [showNavbar])
+
   return (
     <>
       {showNavbar && (
-        <nav className="navbar navbar-expand-lg navbar-white bg-white fixed-top shadow-sm" style={{ marginBottom: '5rem' }}>
-          <div className="container">
-            <Link href="/dashboard" className="navbar-brand">
-              ADATS
-            </Link>
-            <button 
-              className="navbar-toggler" 
-              type="button" 
-              data-bs-toggle="collapse" 
-              data-bs-target="#navbarNav" 
-              aria-controls="navbarNav" 
-              aria-expanded="false" 
-              aria-label="Toggle navigation"
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
-            <div className="collapse navbar-collapse" id="navbarNav">
-              <ul className="navbar-nav me-auto">
-                <li className="nav-item">
-                  <Link href="/dashboard" className="nav-link" style={{fontWeight:"bold"}}>
-                    Home
-                  </Link>
-                </li>
-                <li className="nav-item dropdown" style={{fontWeight:"bold"}}>
-                  <a 
-                    className="nav-link dropdown-toggle" 
-                    href="#" 
-                    id="candidatesDropdown" 
-                    role="button" 
-                    data-bs-toggle="dropdown" 
-                    aria-expanded="false"
-                  >
-                    Candidates
-                  </a>
-                  <ul className="dropdown-menu" aria-labelledby="candidatesDropdown" style={{fontWeight:"bold"}}>
-                    <li>
-                      <Link href="/candidates" className="dropdown-item" >
-                        Manage Candidates
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/add-candidate" className="dropdown-item">
-                        Add Candidate
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-              <ul className="navbar-nav ms-auto">
-                <li className="nav-item dropdown">
-                  <a 
-                    className="nav-link dropdown-toggle" 
-                    href="#" 
-                    id="adminDropdown" 
-                    role="button" 
-                    data-bs-toggle="dropdown" 
-                    aria-expanded="false"
-                  >
-                    Admin
-                  </a>
-                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
-                    <li>
-                      <Link href="/users" className="dropdown-item">
-                        Manage Users
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/settings" className="dropdown-item">
-                        Settings
-                      </Link>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#" onClick={handleLogout}>
-                        Logout
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
+        <LoggedInNavbar onLogout={handleLogout} />
       )}
 
       <main style={{ marginTop: showNavbar ? '80px' : '0' }}>
