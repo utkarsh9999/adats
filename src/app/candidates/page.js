@@ -16,6 +16,7 @@ export default function Candidates() {
   const [selectedSkills, setSelectedSkills] = useState([])
   const [selectedLocation, setSelectedLocation] = useState(null)
   const [selectedNoticePeriod, setSelectedNoticePeriod] = useState(null)
+  const [selectedStatus, setSelectedStatus] = useState(null)
   
   const candidatesPerPage = 5
   const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage)
@@ -77,6 +78,16 @@ export default function Candidates() {
     { value: '90_days', label: '90 Days' }
   ]
 
+  const statusOptions = [
+    { value: 'new', label: 'New' },
+    { value: 'screening', label: 'Screening' },
+    { value: 'shortlisted', label: 'Shortlisted' },
+    { value: 'interview', label: 'Interview' },
+    { value: 'offer', label: 'Offer' },
+    { value: 'hired', label: 'Hired' },
+    { value: 'rejected', label: 'Rejected' }
+  ]
+
   useEffect(() => {
     loadCandidates()
   }, [])
@@ -116,10 +127,19 @@ export default function Candidates() {
         candidate.notice_period === selectedNoticePeriod.value
       )
     }
+
+    // Apply status filter
+    if (selectedStatus) {
+      filtered = filtered.filter(candidate => {
+        const status = (candidate.candidate_status || 'new').toString().toLowerCase()
+        return status === selectedStatus.value
+      })
+    }
     
     setFilteredCandidates(filtered)
+    setTotalCandidates(filtered.length)
     setCurrentPage(1) // Reset to first page when filtering
-  }, [candidates, selectedSkills, selectedLocation, selectedNoticePeriod])
+  }, [candidates, selectedSkills, selectedLocation, selectedNoticePeriod, selectedStatus])
 
   const loadCandidates = async () => {
     try {
@@ -211,7 +231,7 @@ export default function Candidates() {
                   onChange={setSelectedSkills}
                   className="basic-multi-select"
                   classNamePrefix="select"
-                  placeholder="Select skills to filter candidates..."
+                  placeholder="Filter candidates by Skills"
                 />
               </div>
             </div>
@@ -226,7 +246,19 @@ export default function Candidates() {
                   onChange={setSelectedLocation}
                   className="basic-single-select"
                   classNamePrefix="select"
-                  placeholder="Select location to filter candidates..."
+                  placeholder="Filter candidates by Location"
+                  isClearable
+                />
+              </div>
+              <div className="col-lg-3 mb-3">
+                <Select
+                  name="status"
+                  options={statusOptions}
+                  value={selectedStatus}
+                  onChange={setSelectedStatus}
+                  className="basic-single-select"
+                  classNamePrefix="select"
+                  placeholder="Filter candidates by Status"
                   isClearable
                 />
               </div>
@@ -238,7 +270,7 @@ export default function Candidates() {
                   onChange={setSelectedNoticePeriod}
                   className="basic-single-select"
                   classNamePrefix="select"
-                  placeholder="Select notice period..."
+                  placeholder="Filter candidates by Notice Period"
                   isClearable
                 />
               </div>
