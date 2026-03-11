@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Toast, ToastContainer } from 'react-bootstrap'
 import { authAPI } from '../../services/api'
 
 export default function Login() {
@@ -9,6 +10,10 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showSuccessToast, setShowSuccessToast] = useState(false)
+  const [showErrorToast, setShowErrorToast] = useState(false)
+  const [errorToastMessage, setErrorToastMessage] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -26,21 +31,42 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    setIsLoading(true)
+    setIsSubmitting(true)
 
     try {
       await authAPI.login(username, password)
-      router.push('/dashboard')
+      setShowSuccessToast(true)
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 2000)
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.')
+      const msg = err.message || 'Login failed. Please try again.'
+      setError(msg)
+      setErrorToastMessage(msg)
+      setShowErrorToast(true)
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
   return (
     <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>
       <div style={{ maxWidth: '400px', width: '100%', padding: '0 15px' }}>
+        <ToastContainer position="top-center" className="p-3" style={{ zIndex: 9999 }}>
+          <Toast bg="success" onClose={() => setShowSuccessToast(false)} show={showSuccessToast} delay={2000} autohide>
+            <Toast.Header closeButton>
+              <strong className="me-auto">Success</strong>
+            </Toast.Header>
+            <Toast.Body className="text-white">Login successful. Redirecting...</Toast.Body>
+          </Toast>
+
+          <Toast bg="danger" onClose={() => setShowErrorToast(false)} show={showErrorToast} delay={2000} autohide>
+            <Toast.Header closeButton>
+              <strong className="me-auto">Error</strong>
+            </Toast.Header>
+            <Toast.Body className="text-white">{errorToastMessage}</Toast.Body>
+          </Toast>
+        </ToastContainer>
         {isLoading ? (
           <div className="text-center py-5">
             <div className="spinner-border" role="status">
@@ -55,12 +81,6 @@ export default function Login() {
                 <div className="text-muted">Candidate Management System</div>
               </div>
 
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
-
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="username" className="form-label">Username</label>
@@ -72,6 +92,7 @@ export default function Login() {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Enter username"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -85,10 +106,11 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter password"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
-                <button type="submit" className="btn btn-primary w-100 btn-sm">
+                <button type="submit" className="btn btn-primary w-100 btn-sm" disabled={isSubmitting}>
                   Login
                 </button>
               </form>

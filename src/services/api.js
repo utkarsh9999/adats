@@ -32,13 +32,28 @@ export const authAPI = {
 // Candidates API
 export const candidatesAPI = {
   getAll: async () => {
-    const response = await fetch(`${API_BASE}/candidates`)
-    const data = await response.json()
-    
-    if (data.success) {
-      return data.data
-    } else {
+    const fetchOnce = async () => {
+      const response = await fetch(`${API_BASE}/candidates`)
+
+      let data
+      try {
+        data = await response.json()
+      } catch (e) {
+        const text = await response.text().catch(() => '')
+        throw new Error(text || 'Failed to fetch candidates')
+      }
+
+      if (data.success) {
+        return data.data
+      }
       throw new Error(data.error || 'Failed to fetch candidates')
+    }
+
+    try {
+      return await fetchOnce()
+    } catch (err) {
+      await new Promise(resolve => setTimeout(resolve, 500))
+      return await fetchOnce()
     }
   },
   

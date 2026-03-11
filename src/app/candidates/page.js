@@ -24,6 +24,12 @@ export default function Candidates() {
   const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage
   const currentCandidates = filteredCandidates.slice(indexOfFirstCandidate, indexOfLastCandidate)
 
+  const selectMenuPortalTarget = typeof window !== 'undefined' ? document.body : null
+  const selectStyles = {
+    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+    menu: (base) => ({ ...base, zIndex: 9999 })
+  }
+
   // Skills options for search
   const skillsOptions = [
     { value: 'Java', label: 'Java' },
@@ -191,6 +197,50 @@ export default function Candidates() {
     }
   }
 
+  const handleExportCSV = () => {
+    const rows = filteredCandidates.length > 0 ? filteredCandidates : candidates
+    if (rows.length === 0) {
+      alert('No data to export')
+      return
+    }
+
+    const headers = [
+      'Name', 'Email', 'Phone', 'Skills', 'Status', 'Location', 'Company', 'Experience', 'Notice Period',
+      'LinkedIn URL', 'Resume Link', 'CTC (LPA)', 'Expected CTC (LPA)', 'Date Created', 'Notes'
+    ]
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(candidate => [
+        `"${candidate.full_name || ''}"`,
+        `"${candidate.email || ''}"`,
+        `"${candidate.phone || ''}"`,
+        `"${(candidate.skills || []).join('; ')}"`,
+        `"${candidate.candidate_status || 'new'}"`,
+        `"${candidate.location || ''}"`,
+        `"${candidate.current_company || ''}"`,
+        `"${candidate.experience_years || ''}"`,
+        `"${candidate.notice_period ? (candidate.notice_period === 'immediate' ? 'Immediate' : candidate.notice_period.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())) : ''}"`,
+        `"${candidate.linkedin_url || ''}"`,
+        `"${candidate.resume || ''}"`,
+        `"${candidate.ctc || ''}"`,
+        `"${candidate.expected_ctc || ''}"`,
+        `"${candidate.created_at ? new Date(candidate.created_at).toLocaleDateString() : ''}"`,
+        `"${candidate.notes || ''}"`
+      ].join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `candidates_export_${new Date().toISOString().slice(0,10)}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -208,12 +258,17 @@ export default function Candidates() {
   return (
     <ProtectedRoute>
       <div className="container">
-        <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
-          <div>
+        <div className="d-md-flex justify-content-between flex-md-nowrap align-items-md-center pt-3 pb-2 mb-3">
+          <div className="mb-3 mb-md-0">
             <h1 className="h3 mb-1">Candidates</h1>
             <div className="text-muted">Manage candidates list.</div>
           </div>
-          <Link href="/add-candidate" className="btn btn-primary btn-sm">Add Candidate</Link>
+          <div className="d-flex gap-2 justify-content-md-end">
+            <button onClick={handleExportCSV} className="btn btn-outline-primary btn-sm">
+              Export to CSV
+            </button>
+            <Link href="/add-candidate" className="btn btn-primary btn-sm">Add Candidate</Link>
+          </div>
         </div>
 
         <div className="card border-0 shadow-sm">
@@ -232,6 +287,8 @@ export default function Candidates() {
                   className="basic-multi-select"
                   classNamePrefix="select"
                   placeholder="Filter candidates by Skills"
+                  menuPortalTarget={selectMenuPortalTarget}
+                  styles={selectStyles}
                 />
               </div>
             </div>
@@ -248,6 +305,8 @@ export default function Candidates() {
                   classNamePrefix="select"
                   placeholder="Filter candidates by Location"
                   isClearable
+                  menuPortalTarget={selectMenuPortalTarget}
+                  styles={selectStyles}
                 />
               </div>
               <div className="col-lg-3 mb-3">
@@ -260,6 +319,8 @@ export default function Candidates() {
                   classNamePrefix="select"
                   placeholder="Filter candidates by Status"
                   isClearable
+                  menuPortalTarget={selectMenuPortalTarget}
+                  styles={selectStyles}
                 />
               </div>
               <div className="col-lg-3 mb-3">
@@ -272,6 +333,8 @@ export default function Candidates() {
                   classNamePrefix="select"
                   placeholder="Filter candidates by Notice Period"
                   isClearable
+                  menuPortalTarget={selectMenuPortalTarget}
+                  styles={selectStyles}
                 />
               </div>
             </div>
@@ -407,7 +470,7 @@ export default function Candidates() {
                   <ul className="pagination justify-content-center pagination-sm">
                     {/* Previous button */}
                     <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                      <button 
+                      <button style={{fontWeight:"bold"}}
                         className="page-link btn-sm" 
                         onClick={() => setCurrentPage(currentPage - 1)}
                         disabled={currentPage === 1}
@@ -419,7 +482,7 @@ export default function Candidates() {
                     {/* Page numbers */}
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
                       <li key={pageNumber} className={`page-item ${currentPage === pageNumber ? 'active' : ''}`}>
-                        <button 
+                        <button style={{fontWeight:"bold"}}
                           className="page-link btn-sm" 
                           onClick={() => setCurrentPage(pageNumber)}
                         >
@@ -430,7 +493,7 @@ export default function Candidates() {
                     
                     {/* Next button */}
                     <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                      <button 
+                      <button style={{fontWeight:"bold"}}
                         className="page-link btn-sm" 
                         onClick={() => setCurrentPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
